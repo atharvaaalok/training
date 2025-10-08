@@ -5,8 +5,8 @@ from zencfg import ConfigBase
 # small domain
 class DatasetConfig(ConfigBase):
     n_data: int = 18186
-    n_train: int = 17500
-    n_test: int = 500
+    n_train: int = 17000
+    n_test: int = 1000
 
     # # # test
     # n_data: int = 101

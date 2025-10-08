@@ -5,7 +5,7 @@ from copy import deepcopy
 
 import torch
 import numpy as np
-from zencfg import cfg_from_commandline
+from zencfg import make_config_from_cli
 
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -87,8 +87,10 @@ if __name__ == '__main__':
     TEST_MODE = True
 
     DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    DATA_PATH = '/workspace/data/airfoil_subsonic_rans/'
+    DATA_PATH = './data/'
     SAVE_PATH = './tmp/'
+
+    print(DEVICE, flush = True)
 
     torch.manual_seed(0)
     np.random.seed(0)
@@ -98,7 +100,7 @@ if __name__ == '__main__':
     ################################################################################
     # Configs
     ################################################################################
-    config = cfg_from_commandline(DefaultConfig)
+    config = make_config_from_cli(DefaultConfig)
     if not config.data.skin_friction_lift and config.model.out_channels == 3:
         config.model.out_channels = 2
         print("config.model.out_channels has been set to 2 becuase skin friction lift is ignored", flush=True)
@@ -109,9 +111,13 @@ if __name__ == '__main__':
     os.makedirs(config.train.save_dir, exist_ok=True)
     print(config.to_dict(), flush=True)
 
+    print('Hello, I am here 1.', flush = True)
+
     ################################################################################
     # Data & Processor
     ################################################################################
+    print('Okay, I got till here 1.', flush = True)
+
     dataset = Dataset(data_path=DATA_PATH,
                       n_data=config.data.n_data,
                       n_train=config.data.n_train,
@@ -122,8 +128,12 @@ if __name__ == '__main__':
                       normalize_y=config.data.normalize_y,
                       skin_friction_lift=config.data.skin_friction_lift)
 
+    print('Okay, I got till here 2.', flush = True)
+
     processor = Processor(normalizers=dataset.normalizers, device=DEVICE)
     torch.save(processor.state_dict(), os.path.join(config.train.save_dir, "processor_state_dict.pt"))
+
+    print('Hello, I am here 2.', flush = True)
 
     ################################################################################
     # Model
@@ -141,6 +151,9 @@ if __name__ == '__main__':
         gno_weight_function_scale=config.model.gno_weight_function_scale,
         gno_use_open3d=False,
     ).to(DEVICE)
+
+    # print(model.device, flush = True)
+    print('Hello, I am here 3.', flush = True)
 
     ################################################################################
     # Train
@@ -183,7 +196,7 @@ if __name__ == '__main__':
                       data_processor=processor,
                       device=DEVICE,
                       wandb_log=False,
-                      log_output=False,
+                      log_output=True,
                       verbose=True,
                       plot=plot)
 
@@ -194,6 +207,6 @@ if __name__ == '__main__':
                   training_loss=train_loss_fn,
                   eval_losses=eval_losses,
                   regularizer=None,
-                  resume_from_dir="/workspace/ShapeOpt/airfoil_rans/fnogno/tmp/1005_071006/",
+                  # resume_from_dir="/workspace/ShapeOpt/airfoil_rans/fnogno/tmp/1005_071006/",
                   save_every=config.train.save_every,
                   save_dir=config.train.save_dir)
